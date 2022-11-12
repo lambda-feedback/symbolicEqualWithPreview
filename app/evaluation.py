@@ -423,9 +423,9 @@ def check_equality(response, answer, params) -> dict:
 #        }
 
     # Numerical sampling to quickly cases where the answer and response is different
-    n = 100
+    n = 10
     a = 0
-    b = 10
+    b = 1
     for k in range(0,n):
         num_ans = float(abs(ans.subs([(s,a+(b-a)*(k+1)/(n+1)) for s in ans.free_symbols])))
         num_res = float(abs(res.subs([(s,a+(b-a)*(k+1)/(n+1)) for s in res.free_symbols])))
