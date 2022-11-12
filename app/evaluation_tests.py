@@ -519,7 +519,8 @@ class TestEvaluationFunction(unittest.TestCase):
             params = {"strict_syntax": False}
             answer = "-(y*sin(x*y) + e^(y)) / (x*(e^(y) + sin(x*y)))"
             responses = [
-                "-(sin(xy)y+(e^y))/(x(e^y+sin(xy)x))"
+                "-(ysin(x*y) + exp(y)) / (x*(exp(y) + sin(x*y)))",
+                "-(sin(xy)y+(e^y))/(x(e^y+sin(xy)x))",
                 "sin(xy)y",
                 "sin(xy)x",
                 "x(e^y+sin(xy)x)",

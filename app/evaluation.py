@@ -423,10 +423,12 @@ def check_equality(response, answer, params) -> dict:
 #        }
 
     # Numerical sampling to quickly cases where the answer and response is different
-    n = 10
+    n = 100
+    a = 0
+    b = 10
     for k in range(0,n):
-        num_ans = float(abs(ans.subs([(s,(k+1)/(n+1)) for s in ans.free_symbols])))
-        num_res = float(abs(res.subs([(s,(k+1)/(n+1)) for s in res.free_symbols])))
+        num_ans = float(abs(ans.subs([(s,a+(b-a)*(k+1)/(n+1)) for s in ans.free_symbols])))
+        num_res = float(abs(res.subs([(s,a+(b-a)*(k+1)/(n+1)) for s in res.free_symbols])))
         ratio = 0
         try:
             ratio = abs(1-num_ans/num_res)
