@@ -6,9 +6,10 @@ except ImportError:
 n = 10
 for k in range(0,n):
     params = {"strict_syntax": False}
-    answer = "-(y*sin(x*y) + e^(y)) / (x*(e^(y) + sin(x*y)))"
+    answer = "-(y*sin(x*y) + exp(y)) / (x*(exp(y) + sin(x*y)))"
     responses = [
-        "-(y*sin(x*y) + exp(y)) / (x*(exp(y) + sin(x*y)))",
+        "-(ysin(x*y) + exp(y)) / (x*(exp(y) + sin(x*y)))",
+        #"-(y*sin(x*y)+e^y)/(x*e^y+x*sin(x*y))",
         #"-(sin(xy)y+(e^y))/(x(e^y+sin(xy)x))"
         ]
     #answer = "6*cos(5*x+1)-90*x*sin(5*x+1)-225*x**2*cos(5*x+1)+125*x**3*sin(5*x+1)"
