@@ -422,7 +422,25 @@ def check_equality(response, answer, params) -> dict:
 #            **interp
 #        }
 
-    # General catch-all if above does not work
+    # Numerical sampling to quickly cases where the answer and response is different
+    n = 10
+    for k in range(0,n):
+        num_ans = float(abs(ans.subs([(s,(k+1)/(n+1)) for s in ans.free_symbols])))
+        num_res = float(abs(res.subs([(s,(k+1)/(n+1)) for s in res.free_symbols])))
+        ratio = 0
+        try:
+            ratio = abs(1-num_ans/num_res)
+        except Exception:
+            try:
+                ratio = abs(1-num_res/num_ans)
+            except Exception:
+                continue
+        if ratio > 1e-14:
+            if remark != "":
+                feedback = {"feedback": remark}
+            return {"is_correct": False, **feedback, **interp}
+
+    # Symbolic comparison
     is_correct = bool((res - ans).simplify() == 0)
     if is_correct:
         if remark != "":

@@ -3,7 +3,7 @@ try:
 except ImportError:
     from evaluation import evaluation_function, parse_error_warning
 
-n = 10
+n = 100
 for k in range(0,n):
     params = {"strict_syntax": False}
     answer = "6*cos(5*x+1)-90*x*sin(5*x+1)-225*x**2*cos(5*x+1)+125*x**3*sin(5*x+1)"
