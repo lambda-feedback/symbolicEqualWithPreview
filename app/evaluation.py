@@ -15,6 +15,11 @@ def evaluation_function(response, answer, params) -> dict:
     Function used to symbolically compare two expressions.
     """
 
+    is_latex = False
+    if (type(response) is dict):
+        is_latex = response["is_latex"]
+        response = response["response"]
+
     # This code handles the plus_minus and minus_plus operators
     # actual symbolic comparison is done in check_equality
     if "multiple_answers_criteria" not in params.keys():
@@ -29,7 +34,7 @@ def evaluation_function(response, answer, params) -> dict:
         response = response.replace(params["minus_plus"],"minus_plus")
 
     if ("plus_minus" not in response+answer) and ("minus_plus" not in response+answer):
-        return check_equality(response, answer, params)
+        return check_equality(response, answer, params, is_latex)
     else:
         response_set = set()
         if ("plus_minus" in response) or ("minus_plus" in response):
@@ -50,7 +55,7 @@ def evaluation_function(response, answer, params) -> dict:
         for i, response in enumerate(response_list):
             result = None
             for j, answer in enumerate(answer_list):
-                result = check_equality(response, answer, params)
+                result = check_equality(response, answer, params, is_latex)
                 if result["is_correct"]:
                     matches["responses"][i] = True
                     matches["answers"][j] = True
@@ -248,10 +253,11 @@ def Absolute(res, ans):
 
     return res, ans, remark
 
-def check_equality(response, answer, params) -> dict:
+def check_equality(response, answer, params, is_latex) -> dict:
 
     from sympy import expand, simplify, trigsimp, radsimp, latex, Symbol
     from sympy import pi
+    from latex2sympy2 import latex2sympy
 
     unsplittable_symbols = tuple()+(params.get("plus_minus","plus_minus"),params.get("minus_plus","minus_plus"))
 
@@ -300,7 +306,11 @@ def check_equality(response, answer, params) -> dict:
 
     # Safely try to parse answer and response into symbolic expressions
     try:
-        res = parse_expression(response, parsing_params)
+        if (is_latex):
+            strRes = str(latex2sympy(response))
+            res = parse_expression(strRes, parsing_params)
+        else:
+            res = parse_expression(response, parsing_params)
     except Exception as e:
         separator = "" if len(remark) == 0 else "\n"
         return {"is_correct": False, "feedback": parse_error_warning(response)+separator+remark}
