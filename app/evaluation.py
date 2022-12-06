@@ -15,6 +15,10 @@ def evaluation_function(response, answer, params) -> dict:
     Function used to symbolically compare two expressions.
     """
 
+    if (type(response) is dict):
+        params.update({"response_format": "latex"})
+        response = response["response"]
+
     # This code handles the plus_minus and minus_plus operators
     # actual symbolic comparison is done in check_equality
     if "multiple_answers_criteria" not in params.keys():
@@ -252,6 +256,7 @@ def check_equality(response, answer, params) -> dict:
 
     from sympy import expand, simplify, trigsimp, radsimp, latex, Symbol
     from sympy import pi
+    from latex2sympy2 import latex2sympy
 
     unsplittable_symbols = tuple()+(params.get("plus_minus","plus_minus"),params.get("minus_plus","minus_plus"))
 
@@ -300,7 +305,9 @@ def check_equality(response, answer, params) -> dict:
 
     # Safely try to parse answer and response into symbolic expressions
     try:
-        res = parse_expression(response, parsing_params)
+        if (params.get("response_format",None) == "latex"):
+            response = str(latex2sympy(response))
+        res = parse_expression(response, parsing_params).simplify()
     except Exception as e:
         separator = "" if len(remark) == 0 else "\n"
         return {"is_correct": False, "feedback": parse_error_warning(response)+separator+remark}

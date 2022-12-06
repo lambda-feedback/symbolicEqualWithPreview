@@ -545,5 +545,38 @@ class TestEvaluationFunction(unittest.TestCase):
                 result = evaluation_function(response, answer, params)
                 self.assertEqual(result["is_correct"], False)
 
+    def test_latex_expression(self):
+        params = {"strict_syntax": False}
+        with self.subTest(tag="frac"):
+            answer = "(x+1)/(x+2)"
+            response = {"response": r"\frac{x+1}{x+2}", "is_latex" : True}
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="exp"):
+            answer = "x^3"
+            response = {"response": r"x^{3}", "is_latex" : True}
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="derivative"):
+            answer = "t"
+            response = {"response": r"\frac{d}{dx} tx", "is_latex" : True}
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="sin"):
+            answer = "sin(x*pi)"
+            response = {"response": r"\sin{x\pi}", "is_latex" : True}
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="log"):
+            answer = "log(x, 10)"
+            response = {"response": r"\log_{10} x", "is_latex" : True}
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="logexp"):
+            answer = "10G"
+            response = {"response": r"10*e^{\ln{G}}", "is_latex" : True}
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
+
 if __name__ == "__main__":
     unittest.main()
