@@ -577,6 +577,11 @@ class TestEvaluationFunction(unittest.TestCase):
             response = {"response": r"10*e^{\ln{G}}", "is_latex" : True}
             result = evaluation_function(response, answer, params)
             self.assertEqual(result["is_correct"], True)
+        with self.subTest(tag="not latex"):
+            answer = "10G"
+            response = {"response": "10*exp(log(G))", "is_latex" : False}
+            result = evaluation_function(response, answer, params)
+            self.assertEqual(result["is_correct"], True)
 
 if __name__ == "__main__":
     unittest.main()
