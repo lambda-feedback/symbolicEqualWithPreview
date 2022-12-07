@@ -15,8 +15,10 @@ def evaluation_function(response, answer, params) -> dict:
     Function used to symbolically compare two expressions.
     """
 
+    params = params.copy()
     if (type(response) is dict):
-        params.update({"response_format": "latex"})
+        if (response["is_latex"]):
+            params.update({"response_format": "latex"})
         response = response["response"]
 
     # This code handles the plus_minus and minus_plus operators
