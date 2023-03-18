@@ -1,4 +1,4 @@
-from typing import Dict, TypedDict
+from typing import Dict, List, TypedDict
 
 import sympy
 from latex2sympy2 import latex2sympy
@@ -6,15 +6,17 @@ from sympy.parsing import parse_expr
 from sympy.printing.latex import LatexPrinter
 from typing_extensions import NotRequired
 
-SymbolDict = Dict[str, str]
+
+class Symbol(TypedDict):
+    latex: str
+    aliases: List[str]
 
 
-class Response(TypedDict):
-    response: str
-    is_latex: bool
+SymbolDict = Dict[str, Symbol]
 
 
 class Params(TypedDict):
+    is_latex: bool
     simplify: NotRequired[bool]
     symbols: NotRequired[SymbolDict]
 
@@ -57,7 +59,7 @@ def latex_symbols(symbols: SymbolDict) -> Dict[sympy.Symbol, str]:
         Dict[sympy.Symbol, str]: A dictionary of sympy Symbol objects to LaTeX
         strings.
     """
-    return {sympy.Symbol(k): v for (k, v) in symbols.items()}
+    return {sympy.Symbol(k): v["latex"] for (k, v) in symbols.items()}
 
 
 def parse_latex(response: str, symbols: SymbolDict) -> str:
@@ -76,7 +78,9 @@ def parse_latex(response: str, symbols: SymbolDict) -> str:
     """
     substitutions = {}
 
-    for sympy_symbol_str, latex_symbol_str in symbols.items():
+    for sympy_symbol_str in symbols:
+        latex_symbol_str = symbols[sympy_symbol_str]["latex"]
+
         try:
             latex_symbol = latex2sympy(latex_symbol_str)
         except Exception:
@@ -99,7 +103,7 @@ def parse_latex(response: str, symbols: SymbolDict) -> str:
         raise ValueError(str(e))
 
 
-def preview_function(response: Response, params: Params) -> Result:
+def preview_function(response: str, params: Params) -> Result:
     """
     Function used to preview a student response.
     ---
@@ -121,20 +125,15 @@ def preview_function(response: Response, params: Params) -> Result:
     """
     symbols: SymbolDict = params.get("symbols", {})
 
-    if "is_latex" not in response:
-        raise ValueError("`is_latex` wasn't passed in response.")
-    elif "response" not in response:
-        raise ValueError("`response` wasn't passed in response.")
-
-    if not response["response"]:
+    if not response:
         return Result(preview=Preview(latex="", sympy=""))
 
     try:
-        if response["is_latex"]:
-            response["response"] = parse_latex(response["response"], symbols)
+        if params.get("is_latex", False):
+            response = parse_latex(response, symbols)
 
         equation = parse_expr(
-            response["response"],
+            response,
             evaluate=False,
             local_dict=sympy_symbols(symbols),
             transformations="all",
