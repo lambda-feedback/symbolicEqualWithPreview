@@ -1,9 +1,9 @@
 import unittest
 
 try:
-    from .preview import Params, preview_function
+    from .preview import Params, extract_latex, preview_function
 except ImportError:
-    from preview import Params, preview_function
+    from preview import Params, extract_latex, preview_function
 
 
 class TestPreviewFunction(unittest.TestCase):
@@ -163,9 +163,12 @@ class TestPreviewFunction(unittest.TestCase):
             is_latex=True,
             simplify=False,
             symbols={
-                "m_table": {"latex": "m_{\\text{table}}", "aliases": []},
+                "m_table": {
+                    "latex": r"hello \( m_{\text{table}} \) world",
+                    "aliases": [],
+                },
                 "test": {
-                    "latex": "\\text{hello}_\\text{world}",
+                    "latex": r"hello $ \text{hello}_\text{world} $ world.",
                     "aliases": [],
                 },
             },
@@ -217,6 +220,26 @@ class TestPreviewFunction(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             preview_function(response, params)
+
+    def test_extract_latex_in_delimiters(self):
+        parentheses = r"hello \( x + 1 \) world."
+        dollars = r"hello $ x ** 2 + 1 $ world."
+
+        self.assertEqual(extract_latex(parentheses), " x + 1 ")
+        self.assertEqual(extract_latex(dollars), " x ** 2 + 1 ")
+
+    def test_extract_latex_no_delimiters(self):
+        test = r"'\sin x + \left ( \text{hello world} \right ) + \cos x"
+        self.assertEqual(extract_latex(test), test)
+
+    def test_extract_latex_multiple_expressions(self):
+        parentheses = r"hello \( x + 1 \) world. \( \sin x + \cos x \) yes."
+        dollars = r"hello $ x ** 2 + 1 $ world. \( \sigma \times \alpha \) no."
+        mixture = r"hello $ x ** 2 - 1 $ world. $ \sigma \times \alpha $ !."
+
+        self.assertEqual(extract_latex(parentheses), " x + 1 ")
+        self.assertEqual(extract_latex(dollars), " x ** 2 + 1 ")
+        self.assertEqual(extract_latex(mixture), " x ** 2 - 1 ")
 
 
 if __name__ == "__main__":

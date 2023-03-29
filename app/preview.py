@@ -1,3 +1,4 @@
+import re
 from typing import Dict, List, TypedDict
 
 import sympy
@@ -13,6 +14,9 @@ class Symbol(TypedDict):
 
 
 SymbolDict = Dict[str, Symbol]
+symbol_latex_re = re.compile(
+    r"(?P<start>\\\(|\$)(?P<latex>.*?)(?P<end>\\\)|\$)"
+)
 
 
 class Params(TypedDict):
@@ -38,13 +42,31 @@ def sympy_symbols(symbols: SymbolDict) -> Dict[str, sympy.Symbol]:
         symbol strings.
 
     Note:
-        Note, only the sympy string is used in this function.
+        Only the sympy string is used in this function.
 
     Returns:
         Dict[str, sympy.Symbol]: A dictionary of sympy symbol strings to sympy
         Symbol objects.
     """
     return {k: sympy.Symbol(k) for k in symbols}
+
+
+def extract_latex(symbol: str) -> str:
+    """Returns the latex portion of a symbol string.
+
+    Note:
+        Only the first matched expression is returned.
+
+    Args:
+        symbol (str): The string to extract latex from.
+
+    Returns:
+        str: The latex string.
+    """
+    if (match := symbol_latex_re.search(symbol)) is None:
+        return symbol
+
+    return match.group("latex")
 
 
 def latex_symbols(symbols: SymbolDict) -> Dict[sympy.Symbol, str]:
@@ -59,7 +81,10 @@ def latex_symbols(symbols: SymbolDict) -> Dict[sympy.Symbol, str]:
         Dict[sympy.Symbol, str]: A dictionary of sympy Symbol objects to LaTeX
         strings.
     """
-    return {sympy.Symbol(k): v["latex"] for (k, v) in symbols.items()}
+    return {
+        sympy.Symbol(k): extract_latex(v["latex"])
+        for (k, v) in symbols.items()
+    }
 
 
 def parse_latex(response: str, symbols: SymbolDict) -> str:
@@ -79,7 +104,8 @@ def parse_latex(response: str, symbols: SymbolDict) -> str:
     substitutions = {}
 
     for sympy_symbol_str in symbols:
-        latex_symbol_str = symbols[sympy_symbol_str]["latex"]
+        symbol_str = symbols[sympy_symbol_str]["latex"]
+        latex_symbol_str = extract_latex(symbol_str)
 
         try:
             latex_symbol = latex2sympy(latex_symbol_str)
@@ -154,3 +180,12 @@ def preview_function(response: str, params: Params) -> Result:
         raise ValueError("Failed to parse LaTeX expression") from e
 
     return Result(preview=Preview(latex=latex_out, sympy=sympy_out))
+
+
+if __name__ == "__main__":
+    print(extract_latex(r"hello \( x + 1 \) what is occurring"))
+    print(
+        extract_latex(
+            r"hello $ x**2 + 1 $ what is occurring \( x^2 + 1 \) hello"
+        )
+    )
