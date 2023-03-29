@@ -222,6 +222,13 @@ class TestPreviewFunction(unittest.TestCase):
             preview_function(response, params)
 
     def test_extract_latex_in_delimiters(self):
+        parentheses = r"\( x + 1 \)"
+        dollars = r"$ x ** 2 + 1 $"
+
+        self.assertEqual(extract_latex(parentheses), " x + 1 ")
+        self.assertEqual(extract_latex(dollars), " x ** 2 + 1 ")
+
+    def test_extract_latex_in_delimiters_and_text(self):
         parentheses = r"hello \( x + 1 \) world."
         dollars = r"hello $ x ** 2 + 1 $ world."
 
