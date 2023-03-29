@@ -15,7 +15,7 @@ class Symbol(TypedDict):
 
 SymbolDict = Dict[str, Symbol]
 symbol_latex_re = re.compile(
-    r"(?P<start>\\\(|\$)(?P<latex>.*?)(?P<end>\\\)|\$)"
+    r"(?P<start>\\\(|\$\$|\$)(?P<latex>.*?)(?P<end>\\\)|\$\$|\$)"
 )
 
 
@@ -180,12 +180,3 @@ def preview_function(response: str, params: Params) -> Result:
         raise ValueError("Failed to parse LaTeX expression") from e
 
     return Result(preview=Preview(latex=latex_out, sympy=sympy_out))
-
-
-if __name__ == "__main__":
-    print(extract_latex(r"hello \( x + 1 \) what is occurring"))
-    print(
-        extract_latex(
-            r"hello $ x**2 + 1 $ what is occurring \( x^2 + 1 \) hello"
-        )
-    )
